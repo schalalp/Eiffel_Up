@@ -1,2 +1,3 @@
 # Eiffel Up
-kkkkk
+
+O jogo será um platformer vertical de aventura e arcade, ambientado em uma cidade inspirada em Paris, com a Torre Eiffel como um dos principais elementos visuais. O jogador controlará um personagem em um balão que deverá subir por diferentes fases, enfrentando obstáculos, coletando moedas e recompensas para acumular pontos. Ao longo do percurso, serão encontrados power-ups, como itens de velocidade, impulso e bônus de pontuação. Conforme o jogador avança, as fases ficarão progressivamente mais difíceis, exigindo maior habilidade e rapidez para alcançar o topo e obter a maior pontuação possível
