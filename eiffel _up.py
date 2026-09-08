@@ -2,8 +2,10 @@ import pyxel
 
 class Jogo: 
     def __init__(self): 
-        pyxel.init(160, 120, title="Eiffel Up", fps=30) 
+        pyxel.init(160, 120, title="Eiffel Up", fps=10) 
         pyxel.load("eiffel_up.pyxres") 
+        #tentativa png
+        ##pyxel.images[1].load(65,71, "gabriel2.png")
 
         # Balão
         self.x = 64 
@@ -36,13 +38,17 @@ class Jogo:
         # Fundo azul 
         pyxel.cls(12) 
 
+
         # 3 moedas fixas na tela (banco 0, u=0, v=0, tamanho 16x16)
         pyxel.blt(20, 12, 0, 0, 0, 16, 16, 0)
         pyxel.blt(50, 25, 0, 0, 0, 16, 16, 0)
         pyxel.blt(120, 10, 0, 0, 0, 16, 16, 0)
 
+
+        ##pyxel.blt(self.x, self.y, 1, 50, 50, 64, 64, 0)
+
         # Desenha o balão
         if self.y > -32:
-            pyxel.blt(self.x, self.y, 0, 64, 0, 32, 32, 0) 
+            pyxel.blt(self.x, self.y, 0, 67, 0, 32, 40, 0) 
 
 Jogo()
