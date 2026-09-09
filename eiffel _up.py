@@ -4,15 +4,18 @@ class Jogo:
     def __init__(self): 
         pyxel.init(160, 120, title="Eiffel Up", fps=10) 
         pyxel.load("eiffel_up.pyxres") 
-        #tentativa png
-        ##pyxel.images[1].load(65,71, "gabriel2.png")
 
         # Balão
         self.x = 64 
         self.y = 70 
         self.velocidade = 1 
 
-        self.moedas = [[20, 12, True], [50, 25, True], [120, 10, True]]
+        
+        self.moedas = [
+            {"x": 20, "y": 12, "visivel": True},
+            {"x": 50, "y": 25, "visivel": True},
+            {"x": 120, "y": 10, "visivel": True}
+        ]
 
         pyxel.run(self.update, self.draw) 
 
@@ -36,23 +39,25 @@ class Jogo:
         if self.y > -32: 
             self.y -= self.velocidade
 
-        #Colisão das moedas
-        for i range(len(self.moedas)):
-
+    
+        # Passamos por cada moeda da lista para checar se o balão encostou nela
+        for moeda in self.moedas:
+            if moeda["visivel"]:
+                
+                if abs(self.x - moeda["x"]) < 16 and abs(self.y - moeda["y"]) < 16:
+                    moeda["visivel"] = False  # Faz a moeda sumir!
 
     def draw(self): 
         # Fundo azul 
         pyxel.cls(12) 
 
-        # 3 moedas fixas na tela (banco 0, u=0, v=0, tamanho 16x16)
-        pyxel.blt(20, 12, 0, 0, 0, 16, 16, 0)
-        pyxel.blt(50, 25, 0, 0, 0, 16, 16, 0)
-        pyxel.blt(120, 10, 0, 0, 0, 16, 16, 0)
+        # --- NOVO: DESENHA APENAS SE FOR VISÍVEL ---
+        # Em vez de linhas fixas, usamos um loop para desenhar as moedas que ainda estão com 'visivel = True'
+        for moeda in self.moedas:
+            if moeda["visivel"]:
+                pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0)
 
-
-        ##pyxel.blt(self.x, self.y, 1, 50, 50, 64, 64, 0)
-
-        #Desenha o balão
+        # Desenha o balão
         if self.y > -32:
             pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0) 
 
