@@ -11,7 +11,8 @@ class Jogo:
         self.x = 64 
         self.y = 70 
         self.velocidade = 1 
-
+        
+        moedas = [[20, 12], [50, 25], [120, 10]]
         pyxel.run(self.update, self.draw) 
 
     def update(self): 
