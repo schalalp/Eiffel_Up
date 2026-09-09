@@ -12,7 +12,7 @@ class Jogo:
         self.y = 70 
         self.velocidade = 1 
 
-        self.moedas = [[20, 12, "visivel": True], [50, 25,"visivel": True], [120, 10,"visivel": True]]
+        self.moedas = [{"x": 20, "y": 12, "visivel": True}, {"x": 50, "y": 25, "visivel": True}, {"x": 120, "y": 10, "visivel": True}]
 
         pyxel.run(self.update, self.draw) 
 
@@ -67,3 +67,4 @@ class Jogo:
             pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0) 
 
 Jogo()
+
