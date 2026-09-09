@@ -11,8 +11,9 @@ class Jogo:
         self.x = 64 
         self.y = 70 
         self.velocidade = 1 
-        
-        moedas = [[20, 12], [50, 25], [120, 10]]
+
+        self.moedas = [[20, 12, True], [50, 25, True], [120, 10, True]]
+
         pyxel.run(self.update, self.draw) 
 
     def update(self): 
@@ -35,10 +36,13 @@ class Jogo:
         if self.y > -32: 
             self.y -= self.velocidade
 
+        #Colisão das moedas
+        for i range(len(self.moedas)):
+
+
     def draw(self): 
         # Fundo azul 
         pyxel.cls(12) 
-
 
         # 3 moedas fixas na tela (banco 0, u=0, v=0, tamanho 16x16)
         pyxel.blt(20, 12, 0, 0, 0, 16, 16, 0)
@@ -48,8 +52,8 @@ class Jogo:
 
         ##pyxel.blt(self.x, self.y, 1, 50, 50, 64, 64, 0)
 
-        # Desenha o balão
+        #Desenha o balão
         if self.y > -32:
-            pyxel.blt(self.x, self.y, 0, 67, 0, 32, 40, 0) 
+            pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0) 
 
 Jogo()
