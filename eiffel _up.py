@@ -12,9 +12,9 @@ class Jogo:
 
         
         self.moedas = [
-            {"x": 20, "y": 12, "visivel": True},
-            {"x": 50, "y": 25, "visivel": True},
-            {"x": 120, "y": 10, "visivel": True}
+            {"x": 20, "y": 20, "visivel": True},
+            {"x": 50, "y": 40, "visivel": True},
+            {"x": 80, "y": 52, "visivel": True}
         ]
 
         pyxel.run(self.update, self.draw) 
@@ -23,11 +23,18 @@ class Jogo:
         if pyxel.btnp(pyxel.KEY_Q): 
             pyxel.quit() 
 
+# se o balão encostou na moeda
+        for moeda in self.moedas:
+            if moeda["visivel"]:
+                
+                if abs(self.x - moeda["x"]) < 16 and abs(self.y - moeda["y"]) < 16:
+                    moeda["visivel"] = False
+
         # cxontroles do balão
         if pyxel.btn(pyxel.KEY_LEFT): 
-            self.x -= 2 
+            self.x -= 1 
         if pyxel.btn(pyxel.KEY_RIGHT): 
-            self.x += 2 
+            self.x += 1
 
         # limites das laterais
         if self.x < 0:
@@ -38,14 +45,7 @@ class Jogo:
         # balão sobe
         if self.y > -32: 
             self.y -= self.velocidade
-
-    
-        # se o balão encostou na moeda
-        for moeda in self.moedas:
-            if moeda["visivel"]:
-                
-                if abs(self.x - moeda["x"]) < 16 and abs(self.y - moeda["y"]) < 16:
-                    moeda["visivel"] = False 
+ 
 
     def draw(self): 
         pyxel.cls(12) 
@@ -53,10 +53,16 @@ class Jogo:
         #  desenhar as moedas que ainda estão visiveis
         for moeda in self.moedas:
             if moeda["visivel"]:
-                pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0)
+                pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
 
         # desenha o balão
         if self.y > -32:
             pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0) 
 
+        pyxel.blt(0, 0, 1, 0, 232, 0, 455, 0)
+
 Jogo()
+ 
+
+    
+        
