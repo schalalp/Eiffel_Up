@@ -82,19 +82,22 @@ class Jogo:
         if self.estado == "fase1":
             pyxel.cls(12) 
 
-            pyxel.blt(90, 136, 1, 1, 255, 16, 16, 0)
-            
+            #desenha torre eiffel
+            pyxel.blt(0, 0, 1, 0, 24, 160, 120, 0)  # desenha o background sem scale nenhum
+
+            #desenha moeda
             for moeda in self.moedas:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
 
+            #balão
             pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0) 
-
-            pyxel.blt(90, 136, 1, 0, 232, 128, 128, 0, scale=2.0)
 
         elif self.estado == "fase2":
             pyxel.cls(12)
             pyxel.blt(self.x, self.y, 0, 67, 0, 29, 35, 0)
+
+            pyxel.blt(50, 0, 1, 160 ,24, 320, 320, 0)
 
 Jogo()
         
