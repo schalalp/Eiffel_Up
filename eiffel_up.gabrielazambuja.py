@@ -25,9 +25,9 @@ class Jogo:
         self.velocidade = 1 
 
         self.moedas = [
-            {"x": 20, "y": 20, "visivel": True},
+            {"x": 10, "y": 20, "visivel": True},
             {"x": 50, "y": 40, "visivel": True},
-            {"x": 80, "y": 52, "visivel": True}
+            {"x": 125, "y": 52, "visivel": True}
         ]
 
         pyxel.run(self.update, self.draw) 
@@ -50,7 +50,7 @@ class Jogo:
         if self.estado == "fase1":
             #define largura e altura do balao e da moeda p facilitar no cálculo da colisao
             balao_w, balao_h = 29, 35
-            moeda_w, moeda_h = 13, 13
+            moeda_w, moeda_h = 4, 9
 
             # ======= LÓGICA DE COLISÃO DA ABELHA (TIRANDO METADE DA VIDA) =======
             abe_x, abe_y, abe_w, abe_h = 23, 23, 23, 23
@@ -116,19 +116,20 @@ class Jogo:
             return
 
         if self.estado == "fase1":
-            pyxel.cls(12) 
+            pyxel.cls(5) 
 
             #desenha torre eiffel
             pyxel.blt(0, 0, 1, 0, 24, 160, 120, 0)  # desenha o background sem scale nenhum
 
             #desenha moeda
-            for moeda in self.moedas:
-                if moeda["visivel"]:
-                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
+            #for moeda in self.moedas:
+             #   if moeda["visivel"]:
+              #      pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
 
             #desenha abelha
-            pyxel.blt(30, 30, 0, 31, 2, 32, 32, 0)
+            #pyxel.blt(15, 60, 0, 31, 2, 32, 32, 0)
 
+            #pyxel.blt(110, 10, 0, 31, 2, 32, 32, 0)
             
 
             # Adicionado o filtro de piscada na renderização
@@ -151,18 +152,18 @@ class Jogo:
             pyxel.blt(30, 30, 0, 17, 0, 14, 22, 0)
 
         # ======= RENDERIZAÇÃO DA HUD DE CORAÇÕES CONFIGURADA =======
-        LARG_C = 12          # Seus 13 pixels no X
+        LARG_C = 12          # Seus 12 pixels no X
         ALT_C = 12           # Seus 12 pixels no Y
         COR_TRANSPARENTE = 0 
 
         # Suas coordenadas reais aplicadas diretamente:
-        CHEIO_U, CHEIO_V   = 94, 0    # Coração cheio em (94, 16)
+        CHEIO_U, CHEIO_V   = 94, 0    # Coração cheio em (94, 0)
         METADE_U, METADE_V = 106, 0    # Coração na metade em (106,0)
-        VAZIO_U, VAZIO_V   = 118, 0    # Coração vazio em (112, 0)
+        VAZIO_U, VAZIO_V   = 118, 0    # Coração vazio em (118, 0)
 
         for i in range(int(self.vidas_max)):
-            x_pos = 5 + (i * (LARG_C + 4))
-            y_pos = 5
+            x_pos = 110 + (i * (LARG_C + 4))
+            y_pos = 2 
             
             if self.vidas_atuais >= i + 1:
                 # Desenha o seu coração cheio do Banco 0
@@ -177,4 +178,8 @@ class Jogo:
                 pyxel.blt(x_pos, y_pos, 0, VAZIO_U, VAZIO_V, LARG_C, ALT_C, COR_TRANSPARENTE)
 
 Jogo()
+
+
+
+        
 
