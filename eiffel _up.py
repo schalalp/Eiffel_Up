@@ -83,7 +83,7 @@ class Jogo:
             pyxel.cls(12) 
 
             #desenha torre eiffel
-            pyxel.blt(0, 0, 1, 0, 24, 160, 120, 0)  # desenha o background sem scale nenhum
+            pyxel.blt(0, 0, 1, 0, 24, 160, 120, None)  # desenha o background sem scale nenhum
 
             #desenha moeda
             for moeda in self.moedas:
