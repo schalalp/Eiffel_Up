@@ -198,6 +198,7 @@ class Jogo:
         if self.estado == "fase1":
             pyxel.cls(5) 
             pyxel.blt(0, 0, 1, 0, 24, 160, 120, None) 
+            pyxel.blt(0, 120, 0, 0, 214, 320, 320, None) 
 
             # Desenha as moedas da Fase 1
             for moeda in self.moedas_fase1:
