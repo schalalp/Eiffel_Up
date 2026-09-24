@@ -2,7 +2,7 @@ import pyxel
 
 class Jogo:
     def __init__(self):
-        pyxel.init(160, 220, title="Eiffel Up", fps=10)
+        pyxel.init(160, 220, title="Eiffel Up", fps=30)
         pyxel.load("eiffel_up.pyxres")
 
         #váriavel q controla qual tela o jogador ta
@@ -33,18 +33,24 @@ class Jogo:
         self.aviao_w = 24 
         self.aviao_vel = 2 
 
-        #dimensoes dos dois pombos fase 2
+        #dimensoes dos pombos fase 2
         self.pombo_x = 40
-        self.pombo_y_inicial = 50 
-        self.pombo_y = 50 
+        self.pombo_y_inicial = 70 
+        self.pombo_y = 70
         self.pombo_w = 14
         self.pombo_h = 22
         
         self.pombo2_x = 110
-        self.pombo2_y_inicial = 70
-        self.pombo2_y = 70
+        self.pombo2_y_inicial = 20
+        self.pombo2_y = 20
         self.pombo2_w = 14
         self.pombo2_h = 22
+
+        self.pombo3_x = 120
+        self.pombo3_y_inicial = 160
+        self.pombo3_y = 160
+        self.pombo3_w = 14
+        self.pombo3_h = 22
 
         #sistema de flutuação dos pombos
         self.contador_flutuacao = 0
@@ -58,9 +64,9 @@ class Jogo:
 
         # moedas fase 2
         self.moedas_fase2 = [
-            {"x": 20, "y": 30, "visivel": True},
-            {"x": 80, "y": 45, "visivel": True},
-            {"x": 130, "y": 85, "visivel": True}
+            {"x": 20, "y": 15, "visivel": True},
+            {"x": 120, "y": 70, "visivel": True},
+            {"x": 30, "y": 180, "visivel": True}
         ]
 
         pyxel.run(self.update, self.draw) 
@@ -95,7 +101,7 @@ class Jogo:
 
             self.y -= self.velocidade
 
-            # Colisão com as moedas da Fase 1 (área expandida)
+            # Colisão moedas 
             for moeda in self.moedas_fase1:
                 if moeda["visivel"]:
                     if (balao_col_x < moeda["x"] + 16 and
@@ -142,7 +148,7 @@ class Jogo:
             if self.aviao_x > 160:
                 self.aviao_x = -self.aviao_w
 
-            # Colisão com as moedas da Fase 2 
+            # Colisão moedas 
             for moeda in self.moedas_fase2:
                 if moeda["visivel"]:
                     if (balao_col_x < moeda["x"] + 16 and
@@ -158,6 +164,7 @@ class Jogo:
                 self.contador_flutuacao = 0
                 self.pombo_y += self.direcao_pombo
                 self.pombo2_y -= self.direcao_pombo
+                self.pombo3_y += self.direcao_pombo  # Opcional: Adicionado movimento para o pombo 3 também
 
                 if self.pombo_y <= self.pombo_y_inicial - 2:
                     self.direcao_pombo = 1
@@ -181,6 +188,14 @@ class Jogo:
                     self.invulneravel = True
                     self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
 
+                elif (balao_col_x < self.pombo3_x + self.pombo3_w - 2 and
+                      balao_col_x + balao_col_w > self.pombo3_x + 2 and
+                      balao_col_y < self.pombo3_y + self.pombo3_h - 2 and
+                      balao_col_y + balao_col_h > self.pombo3_y + 2):
+                    self.vidas_atuais -= 0.5 
+                    self.invulneravel = True
+                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
+
                 elif (balao_col_x < self.aviao_x + self.aviao_w - 2 and
                       balao_col_x + balao_col_w > self.aviao_x + 2 and
                       balao_col_y < self.aviao_y + 14 and
@@ -199,8 +214,9 @@ class Jogo:
             pyxel.cls(5) 
             pyxel.blt(0, 0, 1, 0, 24, 160, 120, None) 
             pyxel.blt(0, 120, 0, 0, 214, 320, 320, None) 
+            pyxel.blt(0,160,0,0,154,320,320,None)
 
-            # Desenha as moedas da Fase 1
+            # desenha as moedas da Fase 1
             for moeda in self.moedas_fase1:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
@@ -211,15 +227,17 @@ class Jogo:
         elif self.estado == "fase2":
             pyxel.cls(12)
 
-            pyxel.blt(-1, 15, 1, 90, 144, 320, 320, None)
-            pyxel.blt(83, 0, 1, 74, 144, 15, 15, 6)
+            pyxel.blt(-1, 108, 1, 90, 144, 320, 320, None)
+            pyxel.blt(83, 0, 1, 74, 144, 15, 100, 6)
+            pyxel.blt(83, 98, 1, 74, 144, 15, 15, 6)
 
-            pyxel.blt(self.aviao_x, self.aviao_y, 1, 203, 39, 320, 90, 0)
+            pyxel.blt(self.aviao_x, self.aviao_y, 1, 203, 39, 320, 70, 0)
 
             pyxel.blt(self.pombo_x, self.pombo_y, 0, 17, 0, 14, 22, 0)
             pyxel.blt(self.pombo2_x, self.pombo2_y, 0, 17, 0, 14, 22, 0)
+            pyxel.blt(self.pombo3_x, self.pombo3_y, 0, 17, 0, 14, 22, 0)
 
-            # Desenha as moedas da Fase 2
+            # desenha as moedas da Fase 2
             for moeda in self.moedas_fase2:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
@@ -227,7 +245,7 @@ class Jogo:
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
 
-        # Dimensões do coração
+        # dimensões do coração
         larg_c = 12 
         alt_c = 12 
 
