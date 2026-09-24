@@ -106,9 +106,9 @@ class Jogo:
             for moeda in self.moedas_fase1:
                 if moeda["visivel"]:
                     if (balao_col_x < moeda["x"] + 16 and
-                        balao_col_x + balao_col_w > moeda["x"] - 2 and
+                        balao_col_x + balao_col_w > moeda["x"] - 1 and
                         balao_col_y < moeda["y"] + 16 and
-                        balao_col_y + balao_col_h > moeda["y"] - 2):
+                        balao_col_y + balao_col_h > moeda["y"] - 1):
                         moeda["visivel"] = False
                         self.pontos += 10
 
@@ -153,9 +153,9 @@ class Jogo:
             for moeda in self.moedas_fase2:
                 if moeda["visivel"]:
                     if (balao_col_x < moeda["x"] + 16 and
-                        balao_col_x + balao_col_w > moeda["x"] - 2 and
+                        balao_col_x + balao_col_w > moeda["x"] - 1 and
                         balao_col_y < moeda["y"] + 16 and
-                        balao_col_y + balao_col_h > moeda["y"] - 2):
+                        balao_col_y + balao_col_h > moeda["y"] - 1):
                         moeda["visivel"] = False
                         self.pontos += 10
 
@@ -165,7 +165,7 @@ class Jogo:
                 self.contador_flutuacao = 0
                 self.pombo_y += self.direcao_pombo
                 self.pombo2_y -= self.direcao_pombo
-                self.pombo3_y += self.direcao_pombo  # Opcional: Adicionado movimento para o pombo 3 também
+                self.pombo3_y -= self.direcao_pombo 
 
                 if self.pombo_y <= self.pombo_y_inicial - 2:
                     self.direcao_pombo = 1
