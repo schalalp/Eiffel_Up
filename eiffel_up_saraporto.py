@@ -58,8 +58,9 @@ class Jogo:
 
         # moedas fase 1
         self.moedas_fase1 = [
-            {"x": 30, "y": 80, "visivel": True},
-            {"x": 100, "y": 50, "visivel": True},
+            {"x": 30, "y": 100, "visivel": True},
+            {"x": 100, "y": 30, "visivel": True},
+            {"x": 115, "y": 160, "visivel": True},
         ]
 
         # moedas fase 2
@@ -113,8 +114,8 @@ class Jogo:
 
             # colisao nuvens 
             if not self.invulneravel:
-                nuv_esq_x, nuv_esq_y, nuv_esq_w, nuv_esq_h = 22, 18, 30, 24
-                nuv_dir_x, nuv_dir_y, nuv_dir_w, nuv_dir_h = 102, 18, 30, 24
+                nuv_esq_x, nuv_esq_y, nuv_esq_w, nuv_esq_h = 22, 18, 30, 12
+                nuv_dir_x, nuv_dir_y, nuv_dir_w, nuv_dir_h = 102, 18, 30, 15
 
                 if ((balao_col_x < nuv_esq_x + nuv_esq_w and balao_col_x + balao_col_w > nuv_esq_x and
                      balao_col_y < nuv_esq_y + nuv_esq_h and balao_col_y + balao_col_h > nuv_esq_y) or
@@ -219,7 +220,7 @@ class Jogo:
             # desenha as moedas da Fase 1
             for moeda in self.moedas_fase1:
                 if moeda["visivel"]:
-                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
+                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 15, 16, 15)
 
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6) 
@@ -240,7 +241,7 @@ class Jogo:
             # desenha as moedas da Fase 2
             for moeda in self.moedas_fase2:
                 if moeda["visivel"]:
-                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 16, 16, 0, scale=0.8)
+                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 15, 16, 15)
 
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
