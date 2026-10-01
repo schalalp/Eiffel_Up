@@ -104,11 +104,11 @@ class Jogo:
         self.invulneravel = True
         self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
 
-    def pegar_moedas(self, moedas, balao):
+    def pegar_moedas(self, moedas, balao, valor=10):
         for m in moedas:
             if m["visivel"] and self.colide(balao, (m["x"] - 1, m["y"] - 1, 17, 17)):
                 m["visivel"] = False
-                self.pontos += 10
+                self.pontos += valor
 
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
@@ -218,7 +218,7 @@ class Jogo:
             if self.meteoro2_x < -self.meteoro2_w:
                 self.meteoro2_x = 160
 
-            self.pegar_moedas(self.moedas_fase3, balao)
+            self.pegar_moedas(self.moedas_fase3, balao,50)
 
             if not self.invulneravel:
                 meteoros = [
