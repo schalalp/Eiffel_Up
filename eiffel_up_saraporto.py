@@ -28,8 +28,9 @@ class Jogo:
         #dimensoes do aviao fase 2
         self.aviao_x = 0
         self.aviao_y = 40
-        self.aviao_w = 24 
-        self.aviao_vel = 2 
+        self.aviao_w = 43
+        self.aviao_h = 22
+        self.aviao_vel = 2
 
         #dimensoes dos pombos fase 2
         self.pombo_x = 40
@@ -54,6 +55,20 @@ class Jogo:
         self.contador_flutuacao = 0
         self.direcao_pombo = 1
 
+        #dimensões dos meteoros fase 3
+
+        self.meteoro_x = 0
+        self.meteoro_y = 40
+        self.meteoro_w = 45
+        self.meteoro_h = 40
+        self.meteoro_vel = 1
+
+        self.meteoro2_x = 160
+        self.meteoro2_y = 100
+        self.meteoro2_w = 40
+        self.meteoro2_h = 40
+        self.meteoro2_vel = 1
+
         # moedas fase 1
         self.moedas_fase1 = [
             {"x": 30, "y": 100, "visivel": True},
@@ -67,6 +82,13 @@ class Jogo:
             {"x": 120, "y": 70, "visivel": True},
             {"x": 30, "y": 180, "visivel": True}
         ]
+
+        # moedas fase 3 ( rosa)
+        self.moedas_fase3 = [
+            {"x": 20, "y": 15, "visivel": True},
+            {"x": 120, "y": 70, "visivel": True},
+            {"x": 30, "y": 180, "visivel": True}
+                ]
 
         pyxel.run(self.update, self.draw) 
 
@@ -162,10 +184,10 @@ class Jogo:
 
             if not self.invulneravel:
                 inimigos = [
-                    (self.pombo_x + 2,  self.pombo_y + 2,  self.pombo_w - 4,  self.pombo_h - 4),
-                    (self.pombo2_x + 2, self.pombo2_y + 2, self.pombo2_w - 4, self.pombo2_h - 4),
-                    (self.pombo3_x + 2, self.pombo3_y + 2, self.pombo3_w - 4, self.pombo3_h - 4),
-                    (self.aviao_x + 2,  self.aviao_y + 2,  self.aviao_w - 4,  12),
+                    (self.pombo_x + 4,  self.pombo_y + 2,  self.pombo_w - 8,  self.pombo_h - 4),
+                    (self.pombo2_x + 4, self.pombo2_y + 2, self.pombo2_w - 8, self.pombo2_h - 4),
+                    (self.pombo3_x + 4, self.pombo3_y + 2, self.pombo3_w - 8, self.pombo3_h - 4),
+                    (self.aviao_x + 3,  self.aviao_y + 3,  self.aviao_w - 6,  self.aviao_h - 6),
                 ]
                 if any(self.colide(balao, i) for i in inimigos):
                     self.tomar_dano()
@@ -186,6 +208,26 @@ class Jogo:
                 self.x = 128
 
             self.y -= self.velocidade
+
+            self.meteoro_x += self.meteoro_vel
+            self.meteoro2_x -= self.meteoro2_vel
+            
+            if self.meteoro_x > 160:
+                self.meteoro_x = -self.meteoro_w
+
+            if self.meteoro2_x < -self.meteoro2_w:
+                self.meteoro2_x = 160
+
+            self.pegar_moedas(self.moedas_fase3, balao)
+
+            if not self.invulneravel:
+                meteoros = [
+                    (self.meteoro_x + 7, self.meteoro_y + 4, self.meteoro_w - 14, self.meteoro_h - 8 ),
+                    (self.meteoro2_x + 7, self.meteoro2_y + 4, self.meteoro2_w - 14, self.meteoro2_h - 8 )
+                ]
+
+                if any(self.colide(balao, m) for m in meteoros):
+                    self.tomar_dano()
             
     def draw(self): 
         if self.vidas_atuais <= 0:
@@ -231,8 +273,16 @@ class Jogo:
         elif self.estado == "fase3":
             pyxel.cls(0)
 
+            pyxel.blt(105, 153, 0, 205, 190, 600,600,0)
+            pyxel.blt(self.meteoro_x, self.meteoro_y, 0, 204, 97, 45, 40, 0)
+            pyxel.blt(self.meteoro2_x, self.meteoro2_y, 0, 210, 43, 40, 40, 0)
+            
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+
+            for moeda in self.moedas_fase3:
+                if moeda["visivel"]:
+                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 24, 15, 16, 15)
 
         # dimensões do coração
         larg_c = 12 
@@ -260,3 +310,5 @@ class Jogo:
         pyxel.text(x_texto, 5, texto_pontos, 0)
 
 Jogo()
+
+        
