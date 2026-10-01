@@ -2,13 +2,11 @@ import pyxel
 
 class Jogo:
     def __init__(self):
-        pyxel.init(160, 220, title="Eiffel Up", fps=25)
+        pyxel.init(160, 220, title="Eiffel Up", fps=30)
         pyxel.load("eiffel_up.pyxres")
 
         #váriavel q controla qual tela o jogador ta
         self.estado = "fase1"
-        #garante q a troca de fase só aconteça uma vez
-        self.mudou_fase = False
 
         #sistema de vida e dano após colisão dos inimigos
         self.vidas_max = 3.0
@@ -56,6 +54,20 @@ class Jogo:
         self.contador_flutuacao = 0
         self.direcao_pombo = 1
 
+        #dimensões dos meteoros fase 3
+
+        self.meteoro_x = 0
+        self.meteoro_y = 40
+        self.meteoro_w = 30
+        self.meteoro_vel = 1
+
+        self.meteoro2_x = 160
+        self.meteoro2_y = 100
+        self.meteoro2_w = 30
+        self.meteoro2_vel = 1
+
+
+
         # moedas fase 1
         self.moedas_fase1 = [
             {"x": 30, "y": 100, "visivel": True},
@@ -72,6 +84,24 @@ class Jogo:
 
         pyxel.run(self.update, self.draw) 
 
+    # função colisao
+
+    def colide(self, a, b):
+        # a e b são retângulos no formato (x, y, largura, altura)
+        return (a[0] < b[0] + b[2] and a[0] + a[2] > b[0] and
+                a[1] < b[1] + b[3] and a[1] + a[3] > b[1])
+
+    def tomar_dano(self):
+        self.vidas_atuais -= 0.5
+        self.invulneravel = True
+        self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
+
+    def pegar_moedas(self, moedas, balao):
+        for m in moedas:
+            if m["visivel"] and self.colide(balao, (m["x"] - 1, m["y"] - 1, 17, 17)):
+                m["visivel"] = False
+                self.pontos += 10
+
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
             pyxel.quit() 
@@ -84,10 +114,8 @@ class Jogo:
             if self.tempo_invulneravel <= 0:
                 self.invulneravel = False
 
-        balao_col_x = self.x + 3
-        balao_col_y = self.y + 3
-        balao_col_w = 20
-        balao_col_h = 29
+        # hitbox do balão (x, y, largura, altura)
+        balao = (self.x + 3, self.y + 3, 20, 29)
 
         if self.estado == "fase1":
             if pyxel.btn(pyxel.KEY_LEFT): 
@@ -102,33 +130,15 @@ class Jogo:
 
             self.y -= self.velocidade
 
-            # Colisão moedas 
-            for moeda in self.moedas_fase1:
-                if moeda["visivel"]:
-                    if (balao_col_x < moeda["x"] + 16 and
-                        balao_col_x + balao_col_w > moeda["x"] - 1 and
-                        balao_col_y < moeda["y"] + 16 and
-                        balao_col_y + balao_col_h > moeda["y"] - 1):
-                        moeda["visivel"] = False
-                        self.pontos += 10
+            self.pegar_moedas(self.moedas_fase1, balao)
 
-            # colisao nuvens 
             if not self.invulneravel:
-                nuv_esq_x, nuv_esq_y, nuv_esq_w, nuv_esq_h = 22, 18, 30, 12
-                nuv_dir_x, nuv_dir_y, nuv_dir_w, nuv_dir_h = 102, 18, 30, 15
+                nuvens = [(22, 18, 30, 12), (102, 18, 30, 15)]
+                if any(self.colide(balao, n) for n in nuvens):
+                    self.tomar_dano()
 
-                if ((balao_col_x < nuv_esq_x + nuv_esq_w and balao_col_x + balao_col_w > nuv_esq_x and
-                     balao_col_y < nuv_esq_y + nuv_esq_h and balao_col_y + balao_col_h > nuv_esq_y) or
-                    (balao_col_x < nuv_dir_x + nuv_dir_w and balao_col_x + balao_col_w > nuv_dir_x and
-                     balao_col_y < nuv_dir_y + nuv_dir_h and balao_col_y + balao_col_h > nuv_dir_y)):
-                    
-                    self.vidas_atuais -= 0.5 
-                    self.invulneravel = True 
-                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
-
-            if self.y <= -self.altura_balao and not self.mudou_fase:
+            if self.y <= -self.altura_balao:
                 self.estado = "fase2"
-                self.mudou_fase = True
                 self.y = 185
 
         elif self.estado == "fase2":
@@ -143,33 +153,13 @@ class Jogo:
                 self.x = 128
 
             self.y -= self.velocidade
-            
 
             self.aviao_x += self.aviao_vel
 
             if self.aviao_x > 160:
                 self.aviao_x = -self.aviao_w
 
-        elif self.estado == "fase3":
-            if pyxel.btn(pyxel.KEY_LEFT): 
-                self.x -= 1 
-            if pyxel.btn(pyxel.KEY_RIGHT): 
-                self.x += 1
-
-            if self.x < 0:
-                self.x = 0
-            if self.x > 128:
-                self.x = 128
-
-            # Colisão moedas 
-            for moeda in self.moedas_fase2:
-                if moeda["visivel"]:
-                    if (balao_col_x < moeda["x"] + 16 and
-                        balao_col_x + balao_col_w > moeda["x"] - 1 and
-                        balao_col_y < moeda["y"] + 16 and
-                        balao_col_y + balao_col_h > moeda["y"] - 1):
-                        moeda["visivel"] = False
-                        self.pontos += 10
+            self.pegar_moedas(self.moedas_fase2, balao)
 
             self.contador_flutuacao += 1
 
@@ -185,37 +175,40 @@ class Jogo:
                     self.direcao_pombo = -1
 
             if not self.invulneravel:
-                if (balao_col_x < self.pombo_x + self.pombo_w - 2 and
-                    balao_col_x + balao_col_w > self.pombo_x + 2 and
-                    balao_col_y < self.pombo_y + self.pombo_h - 2 and
-                    balao_col_y + balao_col_h > self.pombo_y + 2):
-                    self.vidas_atuais -= 0.5 
-                    self.invulneravel = True 
-                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
-                
-                elif (balao_col_x < self.pombo2_x + self.pombo2_w - 2 and
-                      balao_col_x + balao_col_w > self.pombo2_x + 2 and
-                      balao_col_y < self.pombo2_y + self.pombo2_h - 2 and
-                      balao_col_y + balao_col_h > self.pombo2_y + 2):
-                    self.vidas_atuais -= 0.5 
-                    self.invulneravel = True
-                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
+                inimigos = [
+                    (self.pombo_x + 2,  self.pombo_y + 2,  self.pombo_w - 4,  self.pombo_h - 4),
+                    (self.pombo2_x + 2, self.pombo2_y + 2, self.pombo2_w - 4, self.pombo2_h - 4),
+                    (self.pombo3_x + 2, self.pombo3_y + 2, self.pombo3_w - 4, self.pombo3_h - 4),
+                    (self.aviao_x + 2,  self.aviao_y + 2,  self.aviao_w - 4,  12),
+                ]
+                if any(self.colide(balao, i) for i in inimigos):
+                    self.tomar_dano()
 
-                elif (balao_col_x < self.pombo3_x + self.pombo3_w - 2 and
-                      balao_col_x + balao_col_w > self.pombo3_x + 2 and
-                      balao_col_y < self.pombo3_y + self.pombo3_h - 2 and
-                      balao_col_y + balao_col_h > self.pombo3_y + 2):
-                    self.vidas_atuais -= 0.5 
-                    self.invulneravel = True
-                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
+            if self.y <= -self.altura_balao:
+                self.estado = "fase3"
+                self.y = 185
 
-                elif (balao_col_x < self.aviao_x + self.aviao_w - 2 and
-                      balao_col_x + balao_col_w > self.aviao_x + 2 and
-                      balao_col_y < self.aviao_y + 14 and
-                      balao_col_y + balao_col_h > self.aviao_y + 2):
-                    self.vidas_atuais -= 0.5 
-                    self.invulneravel = True
-                    self.tempo_invulneravel = self.DURACAO_INVULNERAVEL
+        elif self.estado == "fase3":
+            if pyxel.btn(pyxel.KEY_LEFT): 
+                self.x -= 1 
+            if pyxel.btn(pyxel.KEY_RIGHT): 
+                self.x += 1
+
+            if self.x < 0:
+                self.x = 0
+            if self.x > 128:
+                self.x = 128
+
+            self.y -= self.velocidade
+
+            self.meteoro_x += self.meteoro_vel
+            self.meteoro2_x -= self.meteoro2_vel
+            
+            if self.meteoro_x > 160:
+                self.meteoro_x = -self.meteoro_w
+
+            if self.meteoro2_x < -self.meteoro2_w:
+                self.meteoro2_x = 160
             
     def draw(self): 
         if self.vidas_atuais <= 0:
@@ -258,20 +251,14 @@ class Jogo:
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
 
-            if self.y <= -self.altura_balao:
-                self.estado="fase3"
-                self.y=185
-
         elif self.estado == "fase3":
-            pyxel.cls(5)
+            pyxel.cls(0)
 
-            #Balão
+            pyxel.blt(self.meteoro_x, self.meteoro_y, 0, 204, 97, 45, 40, 0)
+            pyxel.blt(self.meteoro2_x, self.meteoro2_y, 0, 210, 43, 40, 40, 0)
+            
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-            
-
-            
-            
 
         # dimensões do coração
         larg_c = 12 
@@ -298,10 +285,7 @@ class Jogo:
         x_texto = 16 - (len(texto_pontos) * 2)
         pyxel.text(x_texto, 5, texto_pontos, 0)
 
-
 Jogo()
-
-
 
         
 
