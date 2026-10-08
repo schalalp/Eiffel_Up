@@ -5,6 +5,8 @@ class Jogo:
         pyxel.init(160, 220, title="Eiffel Up", fps=30)
         pyxel.load("eiffel_up.pyxres")
 
+
+        pyxel.image(2).load(0, 0, "fundo_fase_3.jpg")
         #váriavel q controla qual tela o jogador ta
         self.estado = "fase1"
 
@@ -64,7 +66,7 @@ class Jogo:
         self.meteoro_vel = 1
 
         self.meteoro2_x = 160
-        self.meteoro2_y = 100
+        self.meteoro2_y = 120
         self.meteoro2_w = 40
         self.meteoro2_h = 40
         self.meteoro2_vel = 1
@@ -273,6 +275,8 @@ class Jogo:
         elif self.estado == "fase3":
             pyxel.cls(0)
 
+            pyxel.blt(0, 0, 2, 0, 0, 160, 220)
+            
             pyxel.blt(105, 153, 0, 205, 190, 600,600,0)
             pyxel.blt(self.meteoro_x, self.meteoro_y, 0, 204, 97, 45, 40, 0)
             pyxel.blt(self.meteoro2_x, self.meteoro2_y, 0, 210, 43, 40, 40, 0)
