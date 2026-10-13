@@ -10,6 +10,7 @@ class Jogo:
 
         pyxel.image(2).load(0, 0, "fundo_fase_3_4.jpg")
         pyxel.image(2).load(160, 0, "planeta.png")
+        pyxel.image(2).load(160, 60, "planeta2.png")
 
         #Váriavel que controla qual tela o jogador esta
         self.estado = "inicio"
@@ -118,6 +119,20 @@ class Jogo:
         self.tiro_vel = 4
         self.tiro_intervalo = 25  # frames de espera até o próximo tiro (30 fps = 0,5 s)
         self.tiro_seguinte = self.tiro_intervalo
+
+        self.ovni2_x = 0
+        self.ovni2_y = 0
+        self.ovni2_w = 40
+        self.ovni2_h = 32
+        self.ovni2_vel = 1
+        self.ovni2_dir = 1
+
+        self.tiro2 = None
+        self.tiro2_w = 3
+        self.tiro2_h = 6
+        self.tiro2_vel = 4
+        self.tiro2_intervalo = 25
+        self.tiro2_seguinte = self.tiro2_intervalo
 
         # moedas fase 1
         self.moedas_fase1 = [
@@ -295,6 +310,40 @@ class Jogo:
             elif self.tiro["x"] > 160:
                 self.tiro = None
     
+    def atirar_ovni2(self):
+        self.tiro2 = {
+            "x": self.ovni2_x + self.ovni2_w / 2 - self.tiro2_w / 2,
+            "y": self.ovni2_y + self.ovni2_h,
+        }
+
+    def atualizar_ovni2(self, balao):
+        self.ovni2_x += self.ovni2_vel * self.ovni2_dir
+
+        if self.ovni2_x <= 0:
+            self.ovni2_x = 0
+            self.ovni2_dir = 1
+        elif self.ovni2_x >= 160 - self.ovni2_w:
+            self.ovni2_x = 160 - self.ovni2_w
+            self.ovni2_dir = -1
+
+        if self.tiro2 is None:
+            self.tiro2_seguinte -= 1
+            if self.tiro2_seguinte <= 0:
+                self.atirar_ovni2()
+                self.tiro2_seguinte = self.tiro2_intervalo
+        else:
+            self.tiro2["y"] += self.tiro2_vel
+
+            hitbox_tiro2 = (self.tiro2["x"], self.tiro2["y"],
+                            self.tiro2_w, self.tiro2_h)
+
+            if self.colide(balao, hitbox_tiro2):
+                if not self.invulneravel:
+                    self.tomar_dano()
+                self.tiro2 = None
+            elif self.tiro2["y"] > 220:
+                self.tiro2 = None
+
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
             pyxel.quit() 
@@ -337,8 +386,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -361,8 +410,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -408,8 +457,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -456,7 +505,7 @@ class Jogo:
             if pyxel.btn(pyxel.KEY_RIGHT):
                 self.x += 1
 
-            self.x = max(0, min(128, self.x))
+            self.x = max(0, min(134, self.x))
 
             self.y -= self.velocidade
 
@@ -506,6 +555,8 @@ class Jogo:
             if self.y <= -self.altura_balao:
                 self.estado = "fase5"
                 self.y = 185
+                self.satelite_x = -44
+                self.satelite_y = 40
 
         elif self.estado == "fase5":
             if pyxel.btn(pyxel.KEY_LEFT): 
@@ -515,13 +566,44 @@ class Jogo:
         
             if self.x < 0:
                  self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
         
             self.y -= self.velocidade
         
             # Coleta das moedas verdes da Fase 5
             self.pegar_moedas(self.moedas_fase5, balao, 100)
+
+            self.satelite_x += 1
+            self.satelite_y += 1
+
+            if self.satelite_x > 160 or self.satelite_y > 220:
+                self.satelite_x = -44
+                self.satelite_y = 40
+
+            satelite = (
+                self.satelite_x + 4,
+                self.satelite_y + 4,
+                self.satelite_w - 8,
+                self.satelite_h - 8
+            )
+
+            if not self.invulneravel:
+                if self.colide(balao, satelite):
+                    self.tomar_dano()
+
+            self.atualizar_ovni2(balao)
+
+            ovni2 = (
+                self.ovni2_x + 3,
+                self.ovni2_y + 3,
+                self.ovni2_w - 6,
+                self.ovni2_h - 6
+            )
+
+            if not self.invulneravel:
+                if self.colide(balao, ovni2):
+                    self.tomar_dano()
 
             # Passagem para a fase 6
             if self.y <= -self.altura_balao:
@@ -537,8 +619,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -572,14 +654,12 @@ class Jogo:
         if self.estado == "inicio":
             pyxel.cls(5)
 
-            # título centralizado (cada letra do pyxel.text tem 4 px de largura)
             titulo = "EIFFEL UP"
             pyxel.text(80 - len(titulo) * 2, 70, titulo, 7)
 
-            # balão enfeitando a tela
-            pyxel.blt(67, 100, 0, 67, 0, 26, 35, 6)
+            pyxel.blt(50, 100, 0, 67, 0, 26, 35, 6)
+            pyxel.blt(84, 102, 0, 91, 48, 26, 35, 6)
 
-            # texto piscando
             if pyxel.frame_count % 30 < 20:
                 aviso = "START"
                 pyxel.text(80 - len(aviso) * 2, 160, aviso, 7)
@@ -706,7 +786,17 @@ class Jogo:
             pyxel.cls(0)
 
              # Fundo
-            pyxel.blt(0, 0, 2, 0, 0, 160, 220) 
+            pyxel.blt(0, 0, 2, 0, 0, 160, 220)
+            pyxel.blt(50, 65, 2, 160, 60, 55, 55, 0) 
+
+            pyxel.blt(self.satelite_x, self.satelite_y, 0, 33, 80, 44, 44, 0)
+
+            pyxel.blt(int(self.ovni2_x), int(self.ovni2_y), 0, 86, 120,
+                    self.ovni2_w, self.ovni2_h, 0)
+
+            if self.tiro2 is not None:
+                pyxel.rect(int(self.tiro2["x"]), int(self.tiro2["y"]),
+                        self.tiro2_w, self.tiro2_h, 8)
 
             # Balão
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
