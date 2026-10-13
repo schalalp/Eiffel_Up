@@ -581,7 +581,7 @@ class Jogo:
 
             # texto piscando
             if pyxel.frame_count % 30 < 20:
-                aviso = "COMEÇAR"
+                aviso = "START"
                 pyxel.text(80 - len(aviso) * 2, 160, aviso, 7)
 
             return
