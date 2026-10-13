@@ -649,7 +649,7 @@ class Jogo:
             pyxel.text(80 - len(titulo) * 2, 40, titulo, 7)
 
             pyxel.blt(34, 90, 0, 67, 0, 26, 35, 6)
-            pyxel.blt(100, 90, 0, 91, 48, 26, 35, 6)
+            pyxel.blt(100, 92, 0, 91, 48, 26, 35, 6)
 
             pyxel.text(47 - len("GABRIEL") * 2, 135, "GABRIEL", 7)
             pyxel.text(113 - len("SARA") * 2, 135, "SARA", 7)
