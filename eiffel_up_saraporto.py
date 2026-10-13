@@ -1,4 +1,6 @@
-import pyxel
+ import pyxel
+import math 
+import random
 
 class Jogo:
     def __init__(self):
@@ -6,8 +8,10 @@ class Jogo:
         pyxel.load("eiffel_up.pyxres")
 
 
-        pyxel.image(2).load(0, 0, "fundo_fase_3.jpg")
-        #váriavel q controla qual tela o jogador ta
+        pyxel.image(2).load(0, 0, "fundo_fase_3_4.jpg")
+        pyxel.image(2).load(160, 0, "planeta.png")
+
+        #Váriavel que controla qual tela o jogador esta
         self.estado = "fase1"
 
         #sistema de vida e dano após colisão dos inimigos
@@ -71,6 +75,31 @@ class Jogo:
         self.meteoro2_h = 40
         self.meteoro2_vel = 1
 
+        #dimensões do satélite fase 4
+        self.satelite_x= 125
+        self.satelite_y= 40
+        self.satelite_w= 44
+        self.satelite_h= 44
+        self.satelite_vel= 1 
+
+    
+        # Estrela inimiga da fase 4
+        self.estrela_x = 20.0
+        self.estrela_y = 20.0
+        self.estrela_w = 18
+        self.estrela_h = 24
+
+        # Velocidade vetorial da estrela
+        self.estrela_vx = 0.0
+        self.estrela_vy = 0.0
+
+        # Parâmetros da perseguição
+        self.estrela_aceleracao = 0.08
+        self.estrela_vel_max = 1.5
+
+        # Tempo para reposicionar a estrela
+        self.estrela_timer = 240    
+
         # moedas fase 1
         self.moedas_fase1 = [
             {"x": 30, "y": 100, "visivel": True},
@@ -92,6 +121,12 @@ class Jogo:
             {"x": 30, "y": 180, "visivel": True}
                 ]
 
+        # moedas fase 4 (rosa)
+        self.moedas_fase4 = [
+            {"x": 20, "y": 60, "visivel": True},
+            {"x": 100, "y": 100, "visivel": True}
+        ]
+
         pyxel.run(self.update, self.draw) 
 
     # função colisao
@@ -111,6 +146,86 @@ class Jogo:
             if m["visivel"] and self.colide(balao, (m["x"] - 1, m["y"] - 1, 17, 17)):
                 m["visivel"] = False
                 self.pontos += valor
+
+   # MOVIMENTO VETORIAL DA ESTRELA  
+
+    def mover_estrela(self):
+        # Centro aproximado do balão
+        alvo_x = self.x + 13
+        alvo_y = self.y + 17
+
+        # Vetor da estrela até o balão
+        dx = alvo_x - self.estrela_x
+        dy = alvo_y - self.estrela_y
+
+        # Distância entre estrela e balão
+        distancia = math.sqrt(dx**2 + dy**2)
+
+        # Aceleração gradual na direção do balão
+        if distancia > 0:
+            self.estrela_vx += (
+                dx / distancia
+            ) * self.estrela_aceleracao
+
+            self.estrela_vy += (
+                dy / distancia
+            ) * self.estrela_aceleracao
+
+        # Velocidade total
+        velocidade = math.sqrt(
+            self.estrela_vx**2
+            + self.estrela_vy**2
+        )
+
+        # Limita a velocidade máxima
+        if velocidade > self.estrela_vel_max:
+            fator = self.estrela_vel_max / velocidade
+
+            self.estrela_vx *= fator
+            self.estrela_vy *= fator
+
+        # Movimento com inércia
+        self.estrela_x += self.estrela_vx
+        self.estrela_y += self.estrela_vy
+
+        # Limites da tela
+        self.estrela_x = max(
+            0, min(144, self.estrela_x)
+        )
+
+        self.estrela_y = max(
+            0, min(204, self.estrela_y)
+        )
+
+    # REPOSICIONAMENTO DA ESTRELA
+
+    def reposicionar_estrela(self):
+        # Escolhe um dos lados da tela
+        lado = random.choice([0, 1])
+
+        if lado == 0:
+            self.estrela_x = 0.0
+        else:
+            self.estrela_x = 144.0
+
+        # Aparece próximo à trajetória do balão
+        self.estrela_y = float(
+            max(
+                0,
+                min(
+                    204,
+                    self.y + random.randint(-50, 50)
+                )
+            )
+        )
+
+        # Reinicia a velocidade
+        self.estrela_vx = 0.0
+        self.estrela_vy = 0.0
+
+        # Reinicia o temporizador
+        self.estrela_timer = 240
+
 
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
@@ -230,7 +345,94 @@ class Jogo:
 
                 if any(self.colide(balao, m) for m in meteoros):
                     self.tomar_dano()
+
+
+          # Passagem para a fase 4
+            if self.y <= -self.altura_balao:
+                self.estado = "fase4"
+                self.y = 185
+
+                # Posição inicial da estrela: (20, 20)
+                self.estrela_x = 20.0
+                self.estrela_y = 20.0
+
+                self.estrela_vx = 0.0
+                self.estrela_vy = 0.0
+                self.estrela_timer = 240
+
+        elif self.estado == "fase4":
+
+            # Movimento do balão
+            if pyxel.btn(pyxel.KEY_LEFT):
+                self.x -= 1
+
+            if pyxel.btn(pyxel.KEY_RIGHT):
+                self.x += 1
+
+            self.x = max(0, min(128, self.x))
+
+            self.y -= self.velocidade
+
             
+
+            #Movimento do satélite
+            self.satelite_x -= 1
+            self.satelite_y += 1
+
+            if self.satelite_x < -44 or self.satelite_y > 220:
+                self.satelite_x= 160
+                self.satelite_y= 40
+
+            # Coleta das moedas rosas da fase 4
+            self.pegar_moedas(self.moedas_fase4, balao, 50)
+
+            # Colisão com o satélite
+            satelite = (
+                self.satelite_x + 4,
+                self.satelite_y + 4,
+                self.satelite_w - 8,
+                self.satelite_h - 8
+            )
+
+            if not self.invulneravel:
+                if self.colide(balao, satelite):
+                    self.tomar_dano()    
+
+            # Movimento vetorial da estrela
+            self.mover_estrela()
+
+            # Reaparecimento periódico
+            self.estrela_timer -= 1
+
+            if self.estrela_timer <= 0:
+                self.reposicionar_estrela()
+
+            # Hitbox da estrela
+            estrela = (
+                int(self.estrela_x) + 2, int(self.estrela_y) + 2, self.estrela_w - 4, self.estrela_h - 4)
+
+            # Colisão com o balão
+            if not self.invulneravel:
+                if self.colide(balao, estrela):
+                    self.tomar_dano()
+
+            if self.y <= -self.altura_balao:
+                self.estado = "fase5"
+                self.y = 185
+
+        elif self.estado == "fase5":
+            if pyxel.btn(pyxel.KEY_LEFT): 
+                self.x -= 1 
+            if pyxel.btn(pyxel.KEY_RIGHT): 
+                self.x += 1
+
+            if self.x < 0:
+                self.x = 0
+            if self.x > 128:
+                self.x = 128
+
+            self.y -= self.velocidade
+
     def draw(self): 
         if self.vidas_atuais <= 0:
             pyxel.cls(0)
@@ -288,6 +490,69 @@ class Jogo:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 24, 15, 16, 15)
 
+
+        #fase 4
+        elif self.estado == "fase4":
+
+            pyxel.cls(0)
+
+            # Fundo
+            pyxel.blt(
+                0, 0, 2,
+                0, 0,
+                160, 220
+            ) 
+
+            pyxel.blt(self.satelite_x, self.satelite_y, 0, 33, 80, 44, 44, 0)
+
+            pyxel.blt(
+                        int(self.estrela_x),
+                        int(self.estrela_y),
+                        0,       
+                        32, 38,  
+                        18, 20,  
+                        7   
+                    )
+
+            
+            # Balão
+            if (
+                not self.invulneravel
+                or self.tempo_invulneravel % 2 == 0
+            ):
+                pyxel.blt(
+                    self.x, self.y,
+                    0, 67, 0,
+                    26, 35, 6
+                )
+
+            # Desenha as moedas rosas da fase 4
+            for moeda in self.moedas_fase4:
+                if moeda["visivel"]:
+                    pyxel.blt(
+                        moeda["x"], moeda["y"],
+                        0, 0, 24,
+                        15, 16, 15
+                    )    
+
+        elif self.estado == "fase5":
+
+            pyxel.cls(0)
+
+            # Fundo
+            pyxel.blt(
+                0, 0, 2,
+                0, 0,
+                160, 220
+            ) 
+
+                        # Fundo
+            pyxel.blt(
+                95, 40, 2,
+                160, 0,
+                50, 50, 0
+            ) 
+
         # dimensões do coração
         larg_c = 12 
         alt_c = 12 
@@ -314,5 +579,7 @@ class Jogo:
         pyxel.text(x_texto, 5, texto_pontos, 0)
 
 Jogo()
+
+        
 
         
