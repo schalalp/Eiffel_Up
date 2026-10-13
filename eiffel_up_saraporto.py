@@ -169,7 +169,7 @@ class Jogo:
 
         #moedas Fase 6 (verde)
         self.moedas_fase6 = [
-            {"x": 32, "y": 66, "visivel": True},
+            {"x": 42, "y": 66, "visivel": True},
             {"x": 86, "y": 165, "visivel": True}
         ]
 
