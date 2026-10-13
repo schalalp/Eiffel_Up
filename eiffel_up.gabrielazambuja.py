@@ -36,7 +36,7 @@ class Jogo:
         self.aviao_y = 40
         self.aviao_w = 43
         self.aviao_h = 22
-        self.aviao_vel = 2
+        self.aviao_vel = 0.5
 
         #dimensoes dos pombos fase 2
         self.pombo_x = 40
@@ -98,30 +98,46 @@ class Jogo:
         self.estrela_vel_max = 1.5
 
         # Tempo para reposicionar a estrela
-        self.estrela_timer = 240    
+        self.estrela_timer = 240  
 
-        # moedas Fase 1
+        #Dimensões Ovni
+        self.ovni_x = 2
+        self.ovni_y = 0          # começa encostado no topo da tela
+        self.ovni_w = 40
+        self.ovni_h = 32
+        self.ovni_vel = 1
+        self.ovni_dir = 1        # -1 = subindo, 1 = descendo
+
+        #Tiros
+        self.tiro = None         # n existe tiro na tela
+        self.tiro_w = 6          # agora o tiro é deitado
+        self.tiro_h = 3
+        self.tiro_vel = 4
+        self.tiro_intervalo = 25  # frames de espera até o próximo tiro (30 fps = 0,5 s)
+        self.tiro_seguinte = self.tiro_intervalo
+
+        # moedas fase 1
         self.moedas_fase1 = [
             {"x": 30, "y": 100, "visivel": True},
             {"x": 100, "y": 30, "visivel": True},
             {"x": 115, "y": 160, "visivel": True},
         ]
 
-        # moedas Fase 2
+        # moedas fase 2
         self.moedas_fase2 = [
             {"x": 20, "y": 15, "visivel": True},
             {"x": 120, "y": 70, "visivel": True},
             {"x": 30, "y": 180, "visivel": True}
         ]
 
-        # moedas Fase 3 (rosa)
+        # moedas fase 3 ( rosa)
         self.moedas_fase3 = [
             {"x": 20, "y": 15, "visivel": True},
             {"x": 120, "y": 70, "visivel": True},
             {"x": 30, "y": 180, "visivel": True}
                 ]
 
-        # moedas Fase 4 (rosa)
+        # moedas fase 4 (rosa)
         self.moedas_fase4 = [
             {"x": 20, "y": 60, "visivel": True},
             {"x": 100, "y": 100, "visivel": True}
@@ -129,14 +145,14 @@ class Jogo:
 
         #moedas Fase 5 (verde)
         self.moedas_fase5 = [
-            {"x": 32, "y": 66, "visivel": True},
-            {"x": 86, "y": 165, "visivel": True}
+            {"x": 115, "y": 24, "visivel": True},
+            {"x": 44, "y": 120, "visivel": True}
         ]
 
         #moedas Fase 6 (verde)
         self.moedas_fase6 = [
-                {"x": 115, "y": 24, "visivel": True},
-                {"x": 44, "y": 120, "visivel": True}
+            {"x": 32, "y": 66, "visivel": True},
+            {"x": 86, "y": 165, "visivel": True}
         ]
 
         pyxel.run(self.update, self.draw) 
@@ -238,7 +254,44 @@ class Jogo:
         # Reinicia o temporizador
         self.estrela_timer = 240
 
+    def atirar(self):
+        # nasce no meio do lado direito do ovni
+        self.tiro = {
+            "x": self.ovni_x + self.ovni_w,
+            "y": self.ovni_y + self.ovni_h / 2 - self.tiro_h / 2,
+        }
 
+    def atualizar_ovni(self, balao):
+        # sobe e desce sem sair da tela
+        self.ovni_y += self.ovni_vel * self.ovni_dir
+
+        if self.ovni_y <= 0:
+            self.ovni_y = 0
+            self.ovni_dir = 1
+        elif self.ovni_y >= 220 - self.ovni_h:
+            self.ovni_y = 220 - self.ovni_h
+            self.ovni_dir = -1
+
+        # se não há tiro, conta a espera e atira
+        if self.tiro is None:
+            self.tiro_seguinte -= 1
+            if self.tiro_seguinte <= 0:
+                self.atirar()
+                self.tiro_seguinte = self.tiro_intervalo
+        else:
+            # tiro vai para a direita
+            self.tiro["x"] += self.tiro_vel
+
+            hitbox_tiro = (self.tiro["x"], self.tiro["y"],
+                           self.tiro_w, self.tiro_h)
+
+            if self.colide(balao, hitbox_tiro):
+                if not self.invulneravel:
+                    self.tomar_dano()
+                self.tiro = None
+            elif self.tiro["x"] > 160:
+                self.tiro = None
+    
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
             pyxel.quit() 
@@ -437,6 +490,28 @@ class Jogo:
                 self.x -= 1 
             if pyxel.btn(pyxel.KEY_RIGHT): 
                 self.x += 1
+        
+            if self.x < 0:
+                 self.x = 0
+            if self.x > 128:
+                self.x = 128
+        
+            self.y -= self.velocidade
+        
+            # Coleta das moedas verdes da Fase 5
+            self.pegar_moedas(self.moedas_fase5, balao, 100)
+
+            # Passagem para a fase 6
+            if self.y <= -self.altura_balao:
+                self.estado = "fase6"
+                self.y = 185
+            
+
+        elif self.estado == "fase6":
+            if pyxel.btn(pyxel.KEY_LEFT): 
+                self.x -= 1 
+            if pyxel.btn(pyxel.KEY_RIGHT): 
+                self.x += 1
 
             if self.x < 0:
                 self.x = 0
@@ -445,28 +520,26 @@ class Jogo:
 
             self.y -= self.velocidade
 
-            # Coleta das moedas verdes da Fase 5
-            self.pegar_moedas(self.moedas_fase5, balao, 100)
+            self.atualizar_ovni(balao)
 
-            if self.y <= -self.altura_balao:
-                self.estado = "fase6"
-                self.y = 185
+            # Coleta das moedas verdes da Fase 6
+            self.pegar_moedas(self.moedas_fase6, balao, 100)
 
-        elif self.estado == "fase6":
-             if pyxel.btn(pyxel.KEY_LEFT): 
-                self.x -= 1 
-             if pyxel.btn(pyxel.KEY_RIGHT): 
-                self.x += 1
+            # Colisão do balão com o corpo do ovni
+            ovni = (
+                self.ovni_x + 3,
+                self.ovni_y + 3,
+                self.ovni_w - 6,
+                self.ovni_h - 6
+            )
 
-             if self.x < 0:
-                 self.x = 0
-             if self.x > 128:
-                 self.x = 128
-            
-             self.y -= self.velocidade
+            if not self.invulneravel:
+                if self.colide(balao, ovni):
+                    self.tomar_dano()
 
-             # Coleta das moedas verdes da Fase 6
-             self.pegar_moedas(self.moedas_fase6, balao, 100)
+           
+
+        
 
     def draw(self): 
         if self.vidas_atuais <= 0:
@@ -495,13 +568,13 @@ class Jogo:
             pyxel.blt(83, 0, 1, 74, 144, 15, 100, 6)
             pyxel.blt(83, 98, 1, 74, 144, 15, 15, 6)
 
-            pyxel.blt(self.aviao_x, self.aviao_y, 1, 203, 39, 320, 70, 0)
+            pyxel.blt(int(self.aviao_x), self.aviao_y, 1, 203, 39, 320, 70, 0)
 
             pyxel.blt(self.pombo_x, self.pombo_y, 0, 17, 0, 14, 22, 0)
             pyxel.blt(self.pombo2_x, self.pombo2_y, 0, 17, 0, 14, 22, 0)
             pyxel.blt(self.pombo3_x, self.pombo3_y, 0, 17, 0, 14, 22, 0)
 
-            # Desenha as moedas da Fase 2
+            # desenha as moedas da Fase 2
             for moeda in self.moedas_fase2:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 15, 16, 15)
@@ -521,12 +594,12 @@ class Jogo:
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
 
-            # Desenhas as moedas da Fase 3
             for moeda in self.moedas_fase3:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 24, 15, 16, 15)
 
 
+        #fase 4
         elif self.estado == "fase4":
 
             pyxel.cls(0)
@@ -536,56 +609,84 @@ class Jogo:
 
             pyxel.blt(self.satelite_x, self.satelite_y, 0, 33, 80, 44, 44, 0)
 
-            pyxel.blt(int(self.estrela_x), int(self.estrela_y), 0, 32, 38, 18, 20, 7)
+            pyxel.blt(
+                        int(self.estrela_x),
+                        int(self.estrela_y),
+                        0,       
+                        32, 38,  
+                        18, 20,  
+                        7   
+                    )
 
+            
             # Balão
-            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+            if (
+                not self.invulneravel
+                or self.tempo_invulneravel % 2 == 0
+            ):
+                pyxel.blt(
+                    self.x, self.y,
+                    0, 67, 0,
+                    26, 35, 6
+                )
 
-            # Desenha as moedas rosas da Fase 4
+            # Desenha as moedas rosas da fase 4
             for moeda in self.moedas_fase4:
                 if moeda["visivel"]:
-                    pyxel.blt(moeda["x"], moeda["y"], 0, 0, 24, 15, 16, 15)    
+                    pyxel.blt(
+                        moeda["x"], moeda["y"],
+                        0, 0, 24,
+                        15, 16, 15
+                    )    
 
         elif self.estado == "fase5":
 
             pyxel.cls(0)
 
-            # Fundo
+             # Fundo
             pyxel.blt(0, 0, 2, 0, 0, 160, 220) 
-
-            # Fundo Planeta
-            pyxel.blt(95, 40, 2, 160, 0, 50, 50, 0) 
 
             # Balão
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-
-            # Desenhas as moedas verdes da Fase 5
+                        
+            # Desenha as moedas verdes da Fase 5
             for moeda in self.moedas_fase5:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 7, 69, 15, 16, 15)
-
-
+                        
 
         elif self.estado == "fase6":
 
             pyxel.cls(0)
-
+            
             # Fundo
             pyxel.blt(0, 0, 2, 0, 0, 160, 220) 
-
+            
+            # Fundo
+            pyxel.blt(95, 40, 2, 160, 0, 50, 50, 0) 
+            
+            # ovni (banco 0, posição 86,120 no editor)
+            pyxel.blt(int(self.ovni_x), int(self.ovni_y), 0, 86, 120,
+                    self.ovni_w, self.ovni_h, 0)
+            
+            # tiro vermelho
+            if self.tiro is not None:
+                pyxel.rect(int(self.tiro["x"]), int(self.tiro["y"]),
+                        self.tiro_w, self.tiro_h, 8)
+            
             # Balão
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
                 pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-
-            # Desenhas as moedas verdes da Fase 6
+            
+            # Desenha as moedas verdes da Fase 6
             for moeda in self.moedas_fase6:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 7, 69, 15, 16, 15)
             
-        
-        # Dimensões do coração
+
+            
+        # dimensões do coração
         larg_c = 12 
         alt_c = 12 
 
