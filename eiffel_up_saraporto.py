@@ -12,7 +12,10 @@ class Jogo:
         pyxel.image(2).load(160, 0, "planeta.png")
 
         #Váriavel que controla qual tela o jogador esta
-        self.estado = "fase1"
+        self.estado = "inicio"
+
+        self.opcao_menu = 0
+        self.personagem = "gabriel"
 
         #sistema de vida e dano após colisão dos inimigos
         self.vidas_max = 3.0
@@ -299,6 +302,25 @@ class Jogo:
         if self.vidas_atuais <= 0:
             return
 
+        if self.estado == "inicio":
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.KEY_SPACE):
+                self.estado = "menu"
+            return
+
+        if self.estado == "menu":
+            if pyxel.btnp(pyxel.KEY_LEFT):
+                self.opcao_menu = 0
+            if pyxel.btnp(pyxel.KEY_RIGHT):
+                self.opcao_menu = 1
+
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.KEY_SPACE):
+                if self.opcao_menu == 0:
+                    self.personagem = "gabriel"
+                else:
+                    self.personagem = "sara"
+                self.estado = "fase1"
+            return
+
         if self.invulneravel:
             self.tempo_invulneravel -= 1
             if self.tempo_invulneravel <= 0:
@@ -540,6 +562,42 @@ class Jogo:
         if self.vidas_atuais <= 0:
             pyxel.cls(0)
             pyxel.text(60, 55, "game over", 8)
+            return
+
+        if self.estado == "inicio":
+            pyxel.cls(5)
+
+            # título centralizado (cada letra do pyxel.text tem 4 px de largura)
+            titulo = "EIFFEL UP"
+            pyxel.text(80 - len(titulo) * 2, 70, titulo, 7)
+
+            # balão enfeitando a tela
+            pyxel.blt(67, 100, 0, 67, 0, 26, 35, 6)
+
+            # texto piscando
+            if pyxel.frame_count % 30 < 20:
+                aviso = "PRESS ENTER"
+                pyxel.text(80 - len(aviso) * 2, 160, aviso, 7)
+
+            return
+
+        if self.estado == "menu":
+            pyxel.cls(5)
+
+            titulo = "ESCOLHA SEU PERSONAGEM"
+            pyxel.text(80 - len(titulo) * 2, 40, titulo, 7)
+
+            pyxel.blt(34, 90, 0, 67, 0, 26, 35, 6)
+            pyxel.blt(100, 90, 0, 91, 48, 26, 35, 6)
+
+            pyxel.text(47 - len("GABRIEL") * 2, 135, "GABRIEL", 7)
+            pyxel.text(113 - len("SARA") * 2, 135, "SARA", 7)
+
+            if self.opcao_menu == 0:
+                pyxel.rectb(28, 84, 38, 47, 7)
+            else:
+                pyxel.rectb(94, 84, 38, 47, 7)
+
             return
 
         if self.estado == "fase1":
