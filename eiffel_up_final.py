@@ -130,7 +130,7 @@ class Jogo:
         self.tiro2_h = 6
         self.tiro2_vel = 4
         self.tiro2_intervalo = 25
-        self.tiro2_seguinte = self.tiro2_intervalo
+        self.tiro2_seguinte = self.tiro2_intervalo #
 
         # Moedas - Fase 1
         self.moedas_fase1 = [
@@ -263,6 +263,7 @@ class Jogo:
         # Sobe e desce sem sair da tela
         self.ovni_y += self.ovni_vel * self.ovni_dir
 
+        # Movimentação do balão
         if self.ovni_y <= 0:
             self.ovni_y = 0
             self.ovni_dir = 1
@@ -282,42 +283,49 @@ class Jogo:
 
             hitbox_tiro = (self.tiro["x"], self.tiro["y"], self.tiro_w, self.tiro_h)
 
+            # Verifica colisão com o balão ou se saiu da tela
             if self.colide(balao, hitbox_tiro):
                 if not self.invulneravel:
                     self.tomar_dano()
-                self.tiro = None
+                self.tiro = None # Some ao acertar o jogador
             elif self.tiro["x"] > 160:
-                self.tiro = None
+                self.tiro = None # Some se passar da tela
     
     def atirar_ovni2(self):
         self.tiro2 = {"x": self.ovni2_x + self.ovni2_w / 2 - self.tiro2_w / 2, "y": self.ovni2_y + self.ovni2_h}
 
     def atualizar_ovni2(self, balao):
+        # Movimentação horizontal do ovni
         self.ovni2_x += self.ovni2_vel * self.ovni2_dir
+
 
         if self.ovni2_x <= 0:
             self.ovni2_x = 0
-            self.ovni2_dir = 1
+            self.ovni2_dir = 1 # Bateu na esquerda, vai para a direita
         elif self.ovni2_x >= 160 - self.ovni2_w:
             self.ovni2_x = 160 - self.ovni2_w
-            self.ovni2_dir = -1
+            self.ovni2_dir = -1 # Bateu na direita, vai para a esquerda
 
+        #Lógica de desparo de tiro
         if self.tiro2 is None:
             self.tiro2_seguinte -= 1
             if self.tiro2_seguinte <= 0:
                 self.atirar_ovni2()
                 self.tiro2_seguinte = self.tiro2_intervalo
+
+        # Tiro se move para baixo
         else:
             self.tiro2["y"] += self.tiro2_vel
 
             hitbox_tiro2 = (self.tiro2["x"], self.tiro2["y"], self.tiro2_w, self.tiro2_h)
 
+            # Verifica colisão com o balão ou se passa do limite da tela
             if self.colide(balao, hitbox_tiro2):
                 if not self.invulneravel:
                     self.tomar_dano()
-                self.tiro2 = None
+                self.tiro2 = None # Some ao acertar o jogador
             elif self.tiro2["y"] > 220:
-                self.tiro2 = None
+                self.tiro2 = None # Some ao passar da altura da tela
 
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
@@ -615,7 +623,7 @@ class Jogo:
         # Desenha a tela de morte do personagem
         if self.vidas_atuais <= 0:
             pyxel.cls(0)
-            pyxel.text(60, 55, "game over", 8)
+            pyxel.text(60,110, "FIM DE JOGO!", 8)
             return
 
         if self.estado == "inicio":
@@ -789,7 +797,7 @@ class Jogo:
             # Desenha o Ovni - Fase 5
             pyxel.blt(int(self.ovni2_x), int(self.ovni2_y), 0, 86, 120, self.ovni2_w, self.ovni2_h, 0)
 
-            # Desenha o tiro vermelho do Ovni
+            # Desenha o tiro vermelho do Ovni e verefica se há um tiro ativo
             if self.tiro2 is not None:
                 pyxel.rect(int(self.tiro2["x"]), int(self.tiro2["y"]),
                         self.tiro2_w, self.tiro2_h, 8)
@@ -820,7 +828,7 @@ class Jogo:
             # Desenha o Ovni em uma posição diferente - Fase 6
             pyxel.blt(int(self.ovni_x), int(self.ovni_y), 0, 86, 120, self.ovni_w, self.ovni_h, 0)
             
-            # Desenha o tiro vermelho do Ovni
+            # Desenha o tiro vermelho do Ovni e verifica se há um tiro ativo
             if self.tiro is not None:
                 pyxel.rect(int(self.tiro["x"]), int(self.tiro["y"]), self.tiro_w, self.tiro_h, 8)
             
