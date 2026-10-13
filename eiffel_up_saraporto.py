@@ -36,7 +36,7 @@ class Jogo:
         self.aviao_y = 40
         self.aviao_w = 43
         self.aviao_h = 22
-        self.aviao_vel = 2
+        self.aviao_vel = 0.5
 
         #dimensoes dos pombos fase 2
         self.pombo_x = 40
@@ -102,11 +102,11 @@ class Jogo:
 
         #Dimensões Ovni
         self.ovni_x = 2
-        self.ovni_y = 185        # 220 - 35: encostado no fim da tela
+        self.ovni_y = 0          # começa encostado no topo da tela
         self.ovni_w = 40
         self.ovni_h = 32
         self.ovni_vel = 1
-        self.ovni_dir = -1       # -1 = subindo, 1 = descendo
+        self.ovni_dir = 1        # -1 = subindo, 1 = descendo
 
         #Tiros
         self.tiro = None         # n existe tiro na tela
@@ -563,7 +563,7 @@ class Jogo:
             pyxel.blt(83, 0, 1, 74, 144, 15, 100, 6)
             pyxel.blt(83, 98, 1, 74, 144, 15, 15, 6)
 
-            pyxel.blt(self.aviao_x, self.aviao_y, 1, 203, 39, 320, 70, 0)
+            pyxel.blt(int(self.aviao_x), self.aviao_y, 1, 203, 39, 320, 70, 0)
 
             pyxel.blt(self.pombo_x, self.pombo_y, 0, 17, 0, 14, 22, 0)
             pyxel.blt(self.pombo2_x, self.pombo2_y, 0, 17, 0, 14, 22, 0)
