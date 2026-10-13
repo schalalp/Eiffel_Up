@@ -10,9 +10,13 @@ class Jogo:
 
         pyxel.image(2).load(0, 0, "fundo_fase_3_4.jpg")
         pyxel.image(2).load(160, 0, "planeta.png")
+        pyxel.image(2).load(160, 60, "planeta2.png")
 
         #Váriavel que controla qual tela o jogador esta
-        self.estado = "fase1"
+        self.estado = "inicio"
+
+        self.opcao_menu = 0
+        self.personagem = "gabriel"
 
         #sistema de vida e dano após colisão dos inimigos
         self.vidas_max = 3.0
@@ -102,19 +106,33 @@ class Jogo:
 
         #Dimensões Ovni
         self.ovni_x = 2
-        self.ovni_y = 0          # começa encostado no topo da tela
+        self.ovni_y = 0        
         self.ovni_w = 40
         self.ovni_h = 32
         self.ovni_vel = 1
-        self.ovni_dir = 1        # -1 = subindo, 1 = descendo
+        self.ovni_dir = 1      
 
         #Tiros
         self.tiro = None         # n existe tiro na tela
-        self.tiro_w = 6          # agora o tiro é deitado
+        self.tiro_w = 6  
         self.tiro_h = 3
         self.tiro_vel = 4
         self.tiro_intervalo = 25  # frames de espera até o próximo tiro (30 fps = 0,5 s)
         self.tiro_seguinte = self.tiro_intervalo
+
+        self.ovni2_x = 0
+        self.ovni2_y = 0
+        self.ovni2_w = 40
+        self.ovni2_h = 32
+        self.ovni2_vel = 1
+        self.ovni2_dir = 1
+
+        self.tiro2 = None
+        self.tiro2_w = 3
+        self.tiro2_h = 6
+        self.tiro2_vel = 4
+        self.tiro2_intervalo = 25
+        self.tiro2_seguinte = self.tiro2_intervalo
 
         # moedas fase 1
         self.moedas_fase1 = [
@@ -292,11 +310,65 @@ class Jogo:
             elif self.tiro["x"] > 160:
                 self.tiro = None
     
+    def atirar_ovni2(self):
+        self.tiro2 = {
+            "x": self.ovni2_x + self.ovni2_w / 2 - self.tiro2_w / 2,
+            "y": self.ovni2_y + self.ovni2_h,
+        }
+
+    def atualizar_ovni2(self, balao):
+        self.ovni2_x += self.ovni2_vel * self.ovni2_dir
+
+        if self.ovni2_x <= 0:
+            self.ovni2_x = 0
+            self.ovni2_dir = 1
+        elif self.ovni2_x >= 160 - self.ovni2_w:
+            self.ovni2_x = 160 - self.ovni2_w
+            self.ovni2_dir = -1
+
+        if self.tiro2 is None:
+            self.tiro2_seguinte -= 1
+            if self.tiro2_seguinte <= 0:
+                self.atirar_ovni2()
+                self.tiro2_seguinte = self.tiro2_intervalo
+        else:
+            self.tiro2["y"] += self.tiro2_vel
+
+            hitbox_tiro2 = (self.tiro2["x"], self.tiro2["y"],
+                            self.tiro2_w, self.tiro2_h)
+
+            if self.colide(balao, hitbox_tiro2):
+                if not self.invulneravel:
+                    self.tomar_dano()
+                self.tiro2 = None
+            elif self.tiro2["y"] > 220:
+                self.tiro2 = None
+
     def update(self): 
         if pyxel.btnp(pyxel.KEY_Q): 
             pyxel.quit() 
 
         if self.vidas_atuais <= 0:
+            return
+
+        if self.estado == "inicio":
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.KEY_SPACE):
+                self.estado = "menu"
+            return
+
+        if self.estado == "menu":
+            if pyxel.btnp(pyxel.KEY_LEFT):
+                self.opcao_menu = 0
+            if pyxel.btnp(pyxel.KEY_RIGHT):
+                self.opcao_menu = 1
+
+            if pyxel.btnp(pyxel.KEY_RETURN) or pyxel.btnp(pyxel.KEY_SPACE):
+                if self.opcao_menu == 0:
+                    self.personagem = "gabriel"
+                else:
+                    self.personagem = "sara"
+
+                self.estado = "fase1"
             return
 
         if self.invulneravel:
@@ -315,8 +387,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -339,8 +411,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -386,8 +458,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -434,7 +506,7 @@ class Jogo:
             if pyxel.btn(pyxel.KEY_RIGHT):
                 self.x += 1
 
-            self.x = max(0, min(128, self.x))
+            self.x = max(0, min(134, self.x))
 
             self.y -= self.velocidade
 
@@ -484,6 +556,8 @@ class Jogo:
             if self.y <= -self.altura_balao:
                 self.estado = "fase5"
                 self.y = 185
+                self.satelite_x = -44
+                self.satelite_y = 40
 
         elif self.estado == "fase5":
             if pyxel.btn(pyxel.KEY_LEFT): 
@@ -493,13 +567,44 @@ class Jogo:
         
             if self.x < 0:
                  self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
         
             self.y -= self.velocidade
         
             # Coleta das moedas verdes da Fase 5
             self.pegar_moedas(self.moedas_fase5, balao, 100)
+
+            self.satelite_x += 1
+            self.satelite_y += 1
+
+            if self.satelite_x > 160 or self.satelite_y > 220:
+                self.satelite_x = -44
+                self.satelite_y = 40
+
+            satelite = (
+                self.satelite_x + 4,
+                self.satelite_y + 4,
+                self.satelite_w - 8,
+                self.satelite_h - 8
+            )
+
+            if not self.invulneravel:
+                if self.colide(balao, satelite):
+                    self.tomar_dano()
+
+            self.atualizar_ovni2(balao)
+
+            ovni2 = (
+                self.ovni2_x + 3,
+                self.ovni2_y + 3,
+                self.ovni2_w - 6,
+                self.ovni2_h - 6
+            )
+
+            if not self.invulneravel:
+                if self.colide(balao, ovni2):
+                    self.tomar_dano()
 
             # Passagem para a fase 6
             if self.y <= -self.altura_balao:
@@ -515,8 +620,8 @@ class Jogo:
 
             if self.x < 0:
                 self.x = 0
-            if self.x > 128:
-                self.x = 128
+            if self.x > 134:
+                self.x = 134
 
             self.y -= self.velocidade
 
@@ -547,6 +652,46 @@ class Jogo:
             pyxel.text(60, 55, "game over", 8)
             return
 
+        if self.estado == "inicio":
+            pyxel.cls(5)
+
+            titulo = "EIFFEL UP"
+            pyxel.text(80 - len(titulo) * 2, 70, titulo, 7)
+
+            pyxel.blt(50, 100, 0, 67, 0, 26, 35, 6)
+            pyxel.blt(84, 102, 0, 91, 48, 26, 35, 6)
+
+            if pyxel.frame_count % 30 < 20:
+                aviso = "START"
+                pyxel.text(80 - len(aviso) * 2, 160, aviso, 7)
+
+            return
+
+        
+        if self.estado == "menu":
+            pyxel.cls(5)
+
+            titulo = "ESCOLHA SEU PERSONAGEM"
+            pyxel.text(80 - len(titulo) * 2, 40, titulo, 7)
+
+            # Balao do Gabriel
+            pyxel.blt(34, 90, 0, 67, 0, 26, 35, 6)
+
+            # Balao da Sara
+            pyxel.blt(100, 90, 0, 91, 48, 26, 35, 6)
+
+            pyxel.text(47 - len("GABRIEL") * 2, 135, "GABRIEL", 7)
+            pyxel.text(113 - len("SARA") * 2, 135, "SARA", 7)
+
+            # Destaca a opcao selecionada
+            if self.opcao_menu == 0:
+                pyxel.rectb(28, 84, 38, 47, 7)
+            else:
+                pyxel.rectb(94, 84, 38, 47, 7)
+
+            return
+
+
         if self.estado == "fase1":
             pyxel.cls(5) 
             pyxel.blt(0, 0, 1, 0, 24, 160, 120, None) 
@@ -558,8 +703,13 @@ class Jogo:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 15, 16, 15)
 
+            # Desenha o balão específico dependendo da sua escolha
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6) 
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
+                    
 
         elif self.estado == "fase2":
             pyxel.cls(12)
@@ -579,9 +729,15 @@ class Jogo:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 0, 15, 16, 15)
 
+            # Desenha o balão específico dependendo da sua escolha
             if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-
+                         
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+            
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
+            
         elif self.estado == "fase3":
             pyxel.cls(0)
 
@@ -591,21 +747,31 @@ class Jogo:
             pyxel.blt(self.meteoro_x, self.meteoro_y, 0, 204, 97, 45, 40, 0)
             pyxel.blt(self.meteoro2_x, self.meteoro2_y, 0, 210, 43, 40, 40, 0)
             
-            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-
+            # Desenha as moedas da Fase 3
             for moeda in self.moedas_fase3:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 0, 24, 15, 16, 15)
 
+            # Desenha o balão dependendo da sua escolha
+            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
+                         
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+            
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
+            
 
-        #fase 4
         elif self.estado == "fase4":
 
             pyxel.cls(0)
 
             # Fundo
-            pyxel.blt(0, 0, 2, 0, 0, 160, 220) 
+            pyxel.blt(
+                0, 0, 2,
+                0, 0,
+                160, 220
+            ) 
 
             pyxel.blt(self.satelite_x, self.satelite_y, 0, 33, 80, 44, 44, 0)
 
@@ -618,18 +784,6 @@ class Jogo:
                         7   
                     )
 
-            
-            # Balão
-            if (
-                not self.invulneravel
-                or self.tempo_invulneravel % 2 == 0
-            ):
-                pyxel.blt(
-                    self.x, self.y,
-                    0, 67, 0,
-                    26, 35, 6
-                )
-
             # Desenha as moedas rosas da fase 4
             for moeda in self.moedas_fase4:
                 if moeda["visivel"]:
@@ -639,21 +793,46 @@ class Jogo:
                         15, 16, 15
                     )    
 
+            # Desenha o balão específico dependendo da sua escolha
+            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
+                         
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+            
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
+            
+
         elif self.estado == "fase5":
 
             pyxel.cls(0)
 
              # Fundo
-            pyxel.blt(0, 0, 2, 0, 0, 160, 220) 
+            pyxel.blt(0, 0, 2, 0, 0, 160, 220)
+            pyxel.blt(50, 65, 2, 160, 60, 55, 55, 0) 
 
-            # Balão
-            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-                        
+            pyxel.blt(self.satelite_x, self.satelite_y, 0, 33, 80, 44, 44, 0)
+
+            pyxel.blt(int(self.ovni2_x), int(self.ovni2_y), 0, 86, 120,
+                    self.ovni2_w, self.ovni2_h, 0)
+
+            if self.tiro2 is not None:
+                pyxel.rect(int(self.tiro2["x"]), int(self.tiro2["y"]),
+                        self.tiro2_w, self.tiro2_h, 8)
+
             # Desenha as moedas verdes da Fase 5
             for moeda in self.moedas_fase5:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 7, 69, 15, 16, 15)
+
+            # Desenha o balão específico dependendo da sua escolha
+            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
+                                     
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+                        
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
                         
 
         elif self.estado == "fase6":
@@ -675,14 +854,19 @@ class Jogo:
                 pyxel.rect(int(self.tiro["x"]), int(self.tiro["y"]),
                         self.tiro_w, self.tiro_h, 8)
             
-            # Balão
-            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
-                pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
-            
             # Desenha as moedas verdes da Fase 6
             for moeda in self.moedas_fase6:
                 if moeda["visivel"]:
                     pyxel.blt(moeda["x"], moeda["y"], 0, 7, 69, 15, 16, 15)
+
+            # Desenha o balão específico dependendo da sua escolha
+            if not self.invulneravel or self.tempo_invulneravel % 2 == 0:
+                                                 
+                if self.personagem == "gabriel":
+                    pyxel.blt(self.x, self.y, 0, 67, 0, 26, 35, 6)
+                                    
+                elif self.personagem == "sara":
+                    pyxel.blt(self.x, self.y, 0, 91, 48, 26, 35, 6)
             
 
             
@@ -712,8 +896,3 @@ class Jogo:
         pyxel.text(x_texto, 5, texto_pontos, 0)
 
 Jogo()
-
-        
-
-        
-
